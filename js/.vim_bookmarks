@@ -1,0 +1,3 @@
+let l:bm_file_version = 1
+let l:bm_sessions = {'default': {'/home/damon/mydata/project/evernote_qs/js/controller.js': [{'sign_idx': 9500, 'line_nr': 224, 'content': '    performSearch(queryString) {', 'annotation': 'sdfasdf'},],}}
+let l:bm_current_session = 'default'
