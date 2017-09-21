@@ -1,10 +1,12 @@
 class Controller {
     constructor() {
-        this.isSandbox = 1;
+        this.isSandbox = 0;
         this.reset = 1;
 
         this.consumerKey = 'blurm';
         this.consumerSecret = '3c51cc37dc7c6ef5';
+        //Consumer Key: blurm-9322
+        //Consumer Secret: e07995a2b96d7819
         this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : 'https://app.yinxiang.com';
 
         const options = {
@@ -71,15 +73,15 @@ class Controller {
                     for (let i in this.allNotes) {
                         const index = parseInt(i);
                         if (index === selection) {
-                            htmlItems += '<li class="vomnibarSelected">' + generateItems(this.allNotes[index]) + '</li>';
+                            htmlItems += '<li class="eomnibarSelected">' + generateItems(this.allNotes[index]) + '</li>';
                         } else {
                             htmlItems += '<li>' + generateItems(this.allNotes[index]) + '</li>';
                         }
                     }
                     const shadow = $('#myroot')[0].shadowRoot;
-                    const $iframe = $(shadow).find('.vomnibarFrame');
+                    const $iframe = $(shadow).find('.eomnibarFrame');
                     const $iframeContent = $($iframe[0].contentDocument);
-                    const $box = $iframeContent.find('#vomnibar');
+                    const $box = $iframeContent.find('#eomnibar');
                     const $completionList = $box.find('ul');
                     $completionList.append(htmlItems);
                 //});
@@ -121,13 +123,13 @@ class Controller {
                 console.log(tab.url);
             });
 
-            var filter = {
-                url:
-                [
-                    {hostContains: "evernote.com"},
-                    {hostPrefix: "sandbox"}
-                ]
-            }
+            //var filter = {
+                //url:
+                //[
+                    //{hostContains: "evernote.com"},
+                    //{hostPrefix: "sandbox"}
+                //]
+            //}
             chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
                 chrome.tabs.query({active: true}, (tab) => {
                     if (changeInfo.status === 'loading') {
@@ -135,7 +137,8 @@ class Controller {
                             ' status ' + changeInfo.status + ' url ' + changeInfo.url);
 
                         var loc = changeInfo.url;
-                        if (loc && loc.indexOf(this.evernoteHostName + '/Home.action?gotOAuth.html?') >= 0) {
+                        //if (loc && loc.indexOf(this.evernoteHostName + '/Home.action?gotOAuth.html?') >= 0) {
+                        if (loc && loc.indexOf('gotOAuth.html?') >= 0) {
                             console.log(loc);
                             var index, verifier = '';
                             var got_oauth = '';
@@ -146,7 +149,8 @@ class Controller {
                                 if(y[0] === 'oauth_verifier') {
                                     verifier = y[1];
                                 }
-                                else if(y[0] === 'gotOAuth.html?oauth_token') {
+                                //else if(y[0] === 'gotOAuth.html?oauth_token') {
+                                else if(y[0] === 'oauth_token') {
                                     got_oauth = y[1];
                                 }
                             }

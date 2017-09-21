@@ -4,5 +4,6 @@ $(document).ready( () => {
     $('#logout').click(() => controller.logout());
 
     console.log('ready');
-    const vomnibar = new Vomnibar(controller);
+    const eomnibar = new Eomnibar(controller);
 } );
+

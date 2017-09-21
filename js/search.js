@@ -17,18 +17,14 @@ class Search {
         this.allNotes = [];
         this.notesCount = 0;
 
-        this.noteStore.listNotebooks(this.authToken, function (notebooks) {
-            console.log(notebooks);
-        }, (error) => { console.log(error);});
-
-        // search note by title
-        //const filter = new NoteFilter();
-        //filter.words = "hello";
+        //this.noteStore.listNotebooks(this.authToken, function (notebooks) {
+            //console.log(notebooks);
+        //}, (error) => { console.log(error);});
 
     }
 
     loadAllNotes(allNotes) {
-        this.noteStore.findNotesMetadata(this.authToken, this.filter, this.notesCount, 10, this.spec, (data) => {
+        this.noteStore.findNotesMetadata(this.authToken, this.filter, this.notesCount, 200, this.spec, (data) => {
             for (const note of data.notes) {
                 //noteStore.getNote(authToken, note.guid, true, true, true,
                 //true, (data) => { console.log(data); });
