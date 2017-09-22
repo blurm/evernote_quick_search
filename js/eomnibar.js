@@ -35,16 +35,43 @@ class Eomnibar {
 
         // create iframe with given html
         const iframeURL = chrome.extension.getURL("eomnibar.html");
-        const $iframe = $('<iframe src="' + iframeURL + '" seamless class="eomnibarFrame"></iframe>')
+        const $iframe = $('<iframe src="about:blank" seamless class="eomnibarFrame"></iframe>')
+
+        const iframeHTML = `<html>
+            <head>
+            <title>Eomnibar</title>
+            <script type="text/javascript" src="js/utils.js"></script>
+            <script type="text/javascript" src="js/eomnibar.js"></script>
+            <link rel="stylesheet" type="text/css" href="evernote_qs.css" />
+            <link rel="stylesheet" type="text/css" href="eomnibar.css" />
+            </head>
+            <body>
+            <div id="eomnibar" class="evernote_qsReset">
+            <div class="evernote_qsReset eomnibarSearchArea">
+            <input id="eomnibarInput" type="text" class="evernote_qsReset">
+            </div>
+            <ul class="evernote_qsReset"></ul>
+            </div>
+            </body>
+            </html>`;
+
         $(shadowDOM).append($iframe);
 
         $('body').append(shadowWrapper);
 
+        //$iframe.append(iframeHTML);
+        //const iframeDoc = $iframe[0].contentDocument.document ||
+            //$iframe[0].contentDocument.document ||
+            //$iframe[0].contentWindow.document;
+        //iframeDoc.open();
+        //iframeDoc.write(iframeHTML);
+        //iframeDoc.close();
+
         $(shadowDOM).find('.eomnibarFrame').on('load', () => {
         //$(shadowDOM).find('.eomnibarFrame').load(() => {
             console.log('loaded');
-            const shadow = $('#myroot')[0].shadowRoot;
-            const $iframe = $(shadow).find('.eomnibarFrame');
+            //const shadow = $('#myroot')[0].shadowRoot;
+            //const $iframe = $(shadow).find('.eomnibarFrame');
             const $iframeContent = $($iframe[0].contentDocument);
             const $eomnibar = $iframeContent.find('#eomnibar');
 
