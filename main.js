@@ -3,7 +3,7 @@ $(document).ready( () => {
     $('#login').click(() => controller.loginWithEvernote());
     $('#logout').click(() => controller.logout());
 
-    console.log('ready');
-    const eomnibar = new Eomnibar(controller);
+    //console.log('ready');
+    //const eomnibar = new Eomnibar(controller);
 } );
 

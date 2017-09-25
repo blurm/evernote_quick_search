@@ -3,11 +3,11 @@ class Controller {
         this.isSandbox = 0;
         this.reset = 1;
 
-        this.consumerKey = 'blurm';
-        this.consumerSecret = '3c51cc37dc7c6ef5';
-        //Consumer Key: blurm-9322
-        //Consumer Secret: e07995a2b96d7819
-        this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : 'https://app.yinxiang.com';
+        //this.consumerKey = 'blurm';
+        //this.consumerSecret = '3c51cc37dc7c6ef5';
+        this.consumerKey = 'blurm-9322';
+        this.consumerSecret = 'e07995a2b96d7819';
+        this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : 'https://www.evernote.com';
 
         const options = {
             consumerKey: this.consumerKey,

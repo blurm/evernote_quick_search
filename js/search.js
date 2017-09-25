@@ -20,9 +20,12 @@ class Search {
         //this.noteStore.listNotebooks(this.authToken, function (notebooks) {
             //console.log(notebooks);
         //}, (error) => { console.log(error);});
-
     }
 
+    /**
+     * fetch all notes' metadata from evernote
+     *
+     */
     loadAllNotes(allNotes) {
         this.noteStore.findNotesMetadata(this.authToken, this.filter, this.notesCount, 200, this.spec, (data) => {
             for (const note of data.notes) {
@@ -42,7 +45,6 @@ class Search {
             this.notesCount += data.notes.length;
             if (this.notesCount < data.totalNotes) {
                 // 写成递归调用，当前笔记数小于总数时继续递归
-                console.log('continue');
                 this.loadAllNotes(allNotes);
             } else {
                 // put all notes into storage

@@ -1,71 +1,84 @@
-class Eomnibar {
+class EomnibarIn {
     constructor(controller) {
         this.controller = controller;
 
-        this.iframe = null;
         this.eomnibarDOM = null;
         this.completionUl = null;
         this.input = null;
 
         this.suggestions = [];
+        this.maxSuggestion = 25;
         this.selection = 0;
         this.forceNewTab = false;
         this.openInNewTab = false;
+
+        this.port = null;
 
         this.init();
     }
 
     init() {
-        this.initIframe();
-    }
+        onmessage = (e) => {
+            console.log(e.data);
+            e.ports[0].postMessage('Message: received by IFrame: "' + e.data + '"');
+            this.port = e.ports[0];
+            this.port.onmessage = (e) => {this.handleMessage(e)};
+        };
 
-    initIframe() {
-        //const shadow = $('#myroot')[0].shadowRoot;
-        //$(shadow).find('.eomnibarFrame').on('load', () => {
         $(document).ready( () => {
-            console.log('loaded');
-            //const $iframe = $(shadow).find('.eomnibarFrame');
-            //const $iframeContent = $($iframe[0].contentDocument);
-            //const $eomnibar = $iframeContent.find('#eomnibar');
+            console.log('EomnibarIn iframe loaded');
             const $eomnibar = $('#eomnibar');
 
-            //this.iframe = $iframe;
             this.eomnibarDOM = $eomnibar;
             this.completionUl = this.eomnibarDOM.find('ul');
             this.input = this.eomnibarDOM.find('input');
 
             //this.hide();
-            this.initDom();
+            this.initEvent();
         });
     }
 
-    initDom() {
+    handleMessage(e) {
+        if (e.data === 'eomnibar_activateInNewTab') {
+            this.forceNewTab = true;
+            console.log('iframe got message: activeInNewTab');
+        }
+    }
+
+    initEvent() {
         $(window).focus( () => {this.input.focus()} );
         this.input.on('input', (event) => {this.onInput(event)});
+        this.input.blur((event) => {console.log('input blur');this.input.focus();})
         this.input.keydown( (event) => { this.onActionKeydown(event) } )
         $(document).click(() => {this.hide()});
-        $(document).keydown( (event) => {this.onKeydown(event)} );
         $(this.eomnibarDOM).click( (event) => {event.stopPropagation()} );
     }
 
     onInput(event) {
-        const $completionList = this.eomnibarDOM.find('ul');
         this.completionUl.empty();
 
         // 所有匹配的选项
-        const queryString = event.currentTarget.value;
+        const queryString = event.currentTarget.value.trim();
+        if (queryString === '') {
+            this.completionUl.hide();
+            return;
+        }
         const suggestions = this.controller.performSearch(queryString);
         this.suggestions = suggestions;
         this.selection = 0;
 
-
+        // convert note items to html li
         let htmlItems = '';
         for (let i in suggestions) {
             const index = parseInt(i);
             if (index === this.selection) {
-                htmlItems += '<li class="eomnibarSelected">' + this.generateItems(suggestions[index], queryString.trim()) + '</li>';
+                htmlItems += '<li class="eomnibarSuggestion eomnibarSelected">' + this.generateItems(suggestions[index], queryString.trim()) + '</li>';
             } else {
-                htmlItems += '<li>' + this.generateItems(suggestions[index], queryString.trim()) + '</li>';
+                htmlItems += '<li class="eomnibarSuggestion">' + this.generateItems(suggestions[index], queryString.trim()) + '</li>';
+            }
+
+            if (index === 15) {
+                break;
             }
         }
 
@@ -75,19 +88,6 @@ class Eomnibar {
             this.completionUl.append(htmlItems);
             this.completionUl.show();
         }
-    }
-
-    onKeydown(event) {
-        console.log('document keydown');
-        const key = event.key;
-        if (key === 'E' || (event.shiftKey && key === 'e')) {
-            this.forceNewTab = true;
-            this.iframe.removeClass('evernote_qsUIComponentHidden');
-        } else if (key === 'e'){
-            this.iframe.removeClass('evernote_qsUIComponentHidden');
-        }
-        this.iframe.focus();
-        this.input.focus();
     }
 
     onActionKeydown(event) {
@@ -100,8 +100,7 @@ class Eomnibar {
         // 是否在新窗口打开笔记
         this.openInNewTab = event.ctrlKey || event.shiftKey || this.forceNewTab;
 
-        // E or e 打开笔记搜索框
-       if (action === 'down') {
+        if (action === 'down') {
             if (0 < this.suggestions.length) {
                 this.selection += 1;
                 if (this.suggestions.length === this.selection) {
@@ -116,10 +115,11 @@ class Eomnibar {
             }
             this.updateSelection();
         } else if (action === 'dismiss') {
-            //this.iframe.addClass('evernote_qsUIComponentHidden');
+            console.log('dismiss');
             this.hide();
         } else if (action === 'enter') {
             const curSuggestion = this.suggestions[this.selection];
+            this.hide();
             if (this.openInNewTab) {
                 chrome.tabs.create({url: curSuggestion.url});
             } else {
@@ -147,28 +147,21 @@ class Eomnibar {
             return 'enter';
         }
         //else if(["Backspace", "Delete"].includes(key)) {
-            //return "delete"
+        //return "delete"
         //}
     }
 
     hide() {
+        this.port.postMessage('hide');
         this.reset();
     }
 
     reset() {
-        this.iframe.addClass('evernote_qsUIComponentHidden');
         this.input.val('');
         this.completionUl.empty();
         this.completionUl.hide();
         // 需要将焦点从iframe移出，否则任然会触发onInput
-        this.iframe.blur();
-        //@clearUpdateTimer()
-        //@previousInputValue = null
-        //@customSearchMode = null
-        //@selection = @initialSelectionValue
-        //@keywords = []
-        //@seenTabToOpenCompletionList = false
-        //@completer?.reset()
+        //this.iframe.blur();
     }
 
     updateSelection() {
@@ -262,3 +255,13 @@ class Eomnibar {
 
 }
 
+//const shadow = $('#myroot')[0].shadowRoot;
+//const $iframe = $(shadow).find('.eomnibarFrame');
+//const $iframeContent = $($iframe[0].contentDocument);
+//const $eomnibar = $iframeContent.find('#eomnibar');
+
+$(document).ready(function(){
+    console.log('iframe.js', $('#eomnibarInput'));
+    var controller = new Controller();
+    var barIn = new EomnibarIn(controller);
+});

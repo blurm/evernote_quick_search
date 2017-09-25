@@ -9,13 +9,6 @@
   },
   "background": {
       "scripts": [
-          "js/jquery-3.2.1.min.js",
-          "js/jsOAuth-1.3.6.min.js",
-          "js/evernote/evernote-sdk-minified.js",
-          "js/search.js",
-          "js/utils.js",
-          "js/controller.js",
-          "js/eomnibar.js",
           "eventPage.js"
       ],
       "persistent": false
@@ -32,16 +25,12 @@
               "js/search.js",
               "js/utils.js",
               "js/controller.js",
-              "main.js",
+              "js/content_scripts/eomnibarOut.js",
               "js/eomnibar.js"
           ],
           "run_at":"document_idle",
-          "all_frames": true,
           "match_about_blank": true
       }
-  ],
-  "web_accessible_resources": [
-      "css/*"
   ],
   "browser_action": {
       "default_icon": {
@@ -51,6 +40,7 @@
       "default_title": "__MSG_appName__"
   },
   "web_accessible_resources": [
+    "css/*",
     "eomnibar.html",
     "evernote_qs.css",
     "eomnibar.css",
@@ -59,10 +49,10 @@
   ],
   "permissions": [
     "tabs",
-    "webNavigation",
+    "storage",
     "https://sandbox.evernote.com/",
-    "https://app.yinxiang.com/",
-    "https://www.evernote.com/",
-    "storage"
+    "https://app.yinxiang.com/*",
+    "*://*.evernote.com/*",
+    "https://app.yinxiang.com/shard/s23/notestore"
   ]
 }
