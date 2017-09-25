@@ -7,7 +7,7 @@ class EomnibarIn {
         this.input = null;
 
         this.suggestions = [];
-        this.maxSuggestion = 25;
+        this.maxSuggestion = 15;
         this.selection = 0;
         this.forceNewTab = false;
         this.openInNewTab = false;
@@ -63,7 +63,7 @@ class EomnibarIn {
             this.completionUl.hide();
             return;
         }
-        const suggestions = this.controller.performSearch(queryString);
+        const suggestions = this.controller.performSearch(queryString, this.maxSuggestion);
         this.suggestions = suggestions;
         this.selection = 0;
 
@@ -77,7 +77,7 @@ class EomnibarIn {
                 htmlItems += '<li class="eomnibarSuggestion">' + this.generateItems(suggestions[index], queryString.trim()) + '</li>';
             }
 
-            if (index === 15) {
+            if (index === this.maxSuggestion) {
                 break;
             }
         }
@@ -175,10 +175,12 @@ class EomnibarIn {
     }
 
     generateItems(item, queryString) {
-        return `<div class="evernote_qsReset eomnibarTopHalf">
-            <span class="evernote_qsReset eomnibarSource #{insertTextClass}"></span><span class="evernote_qsReset eomnibarSource">title</span>
-            <span class="evernote_qsReset eomnibarTitle">${this.highlightQueryTerms(item.title, queryString)}</span>
-            </div>`
+        return `<div class="eomnibarTopHalf">
+                    <span class="eomnibarSource"></span>
+                    <span class="eomnibarTitle">
+                        ${this.highlightQueryTerms(item.title, queryString)}
+                    </span>
+                </div>`
     }
 
     /**

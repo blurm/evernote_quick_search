@@ -6,41 +6,82 @@
 }
 
 #eomnibar ol, #eomnibar ul {
-  list-style: none;
-  display: none;
+  /*list-style: none;*/
+  /*line-height: 2.5rem;*/
+  /*white-space: nowrap;*/
 }
 
 #eomnibar {
   display: block;
   position: fixed;
   width: calc(100% - 20px); /* adjusted to keep border radius and box-shadow visible*/
-  /*min-width: 400px;
-  top: 70px;
-  left: 50%;*/
+  padding-top: 8px;
   top: 8px;
   left: 8px;
-  /*margin: 0 0 0 -40%;*/
   font-family: sans-serif;
-
-  background: #F1F1F1;
+  font-size: 16px;
+  color: #93A9C8;
+  background: #1C2736;
   text-align: left;
-  border-radius: 4px;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
-  border: 1px solid #aaa;
+  border-radius: 0.25rem;
+  box-shadow: 0px 0.25rem 0.5rem rgba(0, 0, 0, 0.72);
+  overflow: hidden;
   z-index: 2139999999; /* One less than hint markers and the help dialog (see ../content_scripts/evernote_qs.css). */
 }
 
+#eomnibar .eomnibar_spacer {
+    padding-top: 0.5rem;
+}
+
+#eomnibar .suggestion_spacer {
+    padding-top: 0.25rem;
+}
+
+#eomnibar .search-box__query {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: stretch;
+    -ms-flex-align: stretch;
+    align-items: stretch;
+    background: #0b1016;
+    border-radius: 2px;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    padding-bottom: 0.125rem;
+}
+#eomnibar .icon {
+    color: #93A9C8;
+    height: 1.5rem;
+    width: 1.5rem;
+    fill: currentColor;
+    text-align: center;
+    display: inline-block;
+}
+#eomnibar .search-box__search-icon {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    margin-left: 0.5rem;
+    margin-top: 0.5rem;
+}
+#eomnibar .search-box__search-icon > .icon > svg {
+    height: auto;
+}
+
 #eomnibar input {
-  color: #000;
+  color: white;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 20px;
-  height: 34px;
-  margin-bottom: 0;
-  padding: 4px;
-  background-color: white;
-  border-radius: 3px;
-  border: 1px solid #E8E8E8;
-  box-shadow: #444 0px 0px 1px;
+  font-size: inherit;
+
+  height: 2em;
+  line-height: 1.5em;
+  margin: 0.25em 0.5em;
+
+  /*background-color: black;*/
+  /*border-radius: 3px;*/
+  /*border: 1px solid #E8E8E8;*/
+  /*box-shadow: #444 0px 0px 1px;*/
   width: 100%;
   outline: none;
   box-sizing: border-box;
@@ -48,29 +89,18 @@
 
 #eomnibar .eomnibarSearchArea {
   display: block;
-  padding: 10px;
-  background-color: #F1F1F1;
-  border-radius: 4px 4px 0 0;
-  border-bottom: 1px solid #C6C9CE;
-}
-
-#eomnibar ul {
-  background-color: white;
-  border-radius: 0 0 4px 4px;
-  list-style: none;
-  padding: 10px 0;
-  padding-top: 0;
+  /*margin: 0 0.5rem;*/
+  background-color: transparent;
 }
 
 #eomnibar li {
-  border-bottom: 1px solid #ddd;
-  line-height: 1.1em;
-  padding: 7px 10px;
-  font-size: 16px;
+  padding: 0 1em;
+  font-size: inherit;
   color: black;
-  position: relative;
-  display: list-item;
+  display: flex;
   margin: auto;
+  background-color: #1C2736;
+  border-top: 1px solid #2A3A51;
 }
 
 #eomnibar li:last-of-type {
@@ -78,8 +108,9 @@
 }
 
 #eomnibar li .eomnibarTopHalf, #eomnibar li .eomnibarBottomHalf {
-  display: block;
+  display: inline-flex;
   overflow: hidden;
+  padding-top: 1px;
 }
 
 #eomnibar li .eomnibarBottomHalf {
@@ -96,8 +127,10 @@
 }
 
 #eomnibar li .eomnibarSource {
-  color: #777;
-  margin-right: 4px;
+  background: url(images/evernote.png) no-repeat center;
+  background-size: 1.5em;
+  width: 1.6em;
+  flex: 1 0 auto;
 }
 #eomnibar li .eomnibarRelevancy {
   position: absolute;
@@ -122,9 +155,9 @@
 }
 
 #eomnibar li em, #eomnibar li .eomnibarTitle {
-  color: black;
-  margin-left: 4px;
+  color: #93A9C8;
   font-weight: normal;
+  padding: 0.7em;
 }
 #eomnibar li em { font-style: italic; }
 #eomnibar li em .eomnibarMatch, #eomnibar li .eomnibarTitle .eomnibarMatch {
@@ -132,7 +165,8 @@
 }
 
 #eomnibar li.eomnibarSelected {
-  background-color: #BBCEE9;
+  background-color: #2A3A51;
+  /*background-color: #2DBE60;*/
   font-weight: normal;
 }
 

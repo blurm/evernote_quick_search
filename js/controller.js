@@ -227,7 +227,7 @@ class Controller {
         return querystring;
     }
 
-    performSearch(queryString) {
+    performSearch(queryString, maxSuggestion) {
         console.log(queryString);
         const queryTerms = queryString.split(' ');
         const suggestions = [];
@@ -240,7 +240,7 @@ class Controller {
                     matched = false;
                 }
             }
-            if (matched) {
+            if (matched && suggestions.length < maxSuggestion) {
                 suggestions.push(curNote);
             }
         }
