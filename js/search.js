@@ -28,6 +28,7 @@ class Search {
      */
     loadAllNotes(allNotes) {
         this.noteStore.findNotesMetadata(this.authToken, this.filter, this.notesCount, 200, this.spec, (data) => {
+            console.log(data);
             for (const note of data.notes) {
                 //noteStore.getNote(authToken, note.guid, true, true, true,
                 //true, (data) => { console.log(data); });

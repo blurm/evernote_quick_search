@@ -1,29 +1,55 @@
+var config = {
+    isSandbox: 0,
+    evernote: {
+        consumerKey: 'blurm-9322',
+        consumerSecret: 'e07995a2b96d7819',
+        hostName: 'https://www.evernote.com'
+    },
+    yinxiang: {
+        consumerKey: 'blurm',
+        consumerSecret: '3c51cc37dc7c6ef5',
+        hostName: 'https://app.yinxiang.com'
+    }
+}
+
 class Controller {
     constructor() {
-        this.isSandbox = 0;
-        this.reset = 1;
+        this.isSandbox = config.isSandbox;
 
-        //this.consumerKey = 'blurm';
-        //this.consumerSecret = '3c51cc37dc7c6ef5';
-        this.consumerKey = 'blurm-9322';
-        this.consumerSecret = 'e07995a2b96d7819';
-        this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : 'https://www.evernote.com';
+        // Set api key and host by user's language setting in Chrome
+        chrome.i18n.getAcceptLanguages((list) => {
+            if ('zh-CN' === list[0]) {
+                this.consumerKey = config.yinxiang.consumerKey;
+                this.consumerSecret = config.yinxiang.consumerSecret;
+                this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : config.yinxiang.hostName;
+            } else {
+                this.consumerKey = config.evernote.consumerKey;
+                this.consumerSecret = config.evernote.consumerSecret;
+                this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : config.evernote.hostName;
+            }
 
-        const options = {
-            consumerKey: this.consumerKey,
-            consumerSecret: this.consumerSecret,
-            callbackUrl : "gotOAuth.html",
-            signatureMethod : "HMAC-SHA1"
-        };
-        this.oauth = OAuth(options);
+            const options = {
+                consumerKey: this.consumerKey,
+                consumerSecret: this.consumerSecret,
+                callbackUrl : "gotOAuth.html",
+                signatureMethod : "HMAC-SHA1"
+            };
+            this.oauth = OAuth(options);
 
-        this.initOAuthInfo();
+            this.initOAuthInfo();
+        });
     }
 
     initOAuthInfo() {
         chrome.storage.local.get((items) => {
-            this.oauth_token_secret = items.oauth_token_secret;
-            this.oauth_token = items.oauth_token;
+            console.log('storage.local:', items);
+            console.log('background:', chrome.extension.getBackgroundPage().eomnibarController);
+
+            if (!items.oauth_token) {
+                chrome.tabs.create({url:"main.html"});
+                return;
+            }
+
             this.expires = items.edam_expires;
             this.noteStoreUrl = items.edam_noteStoreUrl;
             this.shard = items.edam_shard;
@@ -31,9 +57,6 @@ class Controller {
             this.webApiUrlPrefix = items.edam_webApiUrlPrefix;
             this.oauth_token = items.oauth_token;
             this.oauth_token_secret = items.oauth_token_secret;
-
-            console.log(items);
-
 
             const spec = new NotesMetadataResultSpec();
             spec.includeTitle = true;
@@ -54,7 +77,15 @@ class Controller {
 
     logout() {
         console.log('logout');
-        chrome.storage.local.clear(function() {
+        chrome.storage.local.clear(() => {
+            this.expires = null;
+            this.noteStoreUrl = null;
+            this.shard = null;
+            this.userId = null;
+            this.webApiUrlPrefix = null;
+            this.oauth_token = null;
+            this.oauth_token_secret = null;
+
             var error = chrome.runtime.lastError;
             if (error) {
                 console.error(error);
@@ -63,33 +94,12 @@ class Controller {
     }
 
     loginWithEvernote() {
-        if (this.oauth_token && !this.reset) {
-            console.log('already auth');
+        this.oauth.request({'method': 'GET', 'url': this.evernoteHostName +
+            '/oauth', 'success': (data) => {this.success(data)}, 'failure': (error) => {this.failure(error);}});
+    }
 
-            setTimeout(() => {
-                //chrome.storage.local.get((items) => {
-                    let htmlItems = '';
-                    const selection = 0;
-                    for (let i in this.allNotes) {
-                        const index = parseInt(i);
-                        if (index === selection) {
-                            htmlItems += '<li class="eomnibarSelected">' + generateItems(this.allNotes[index]) + '</li>';
-                        } else {
-                            htmlItems += '<li>' + generateItems(this.allNotes[index]) + '</li>';
-                        }
-                    }
-                    const shadow = $('#myroot')[0].shadowRoot;
-                    const $iframe = $(shadow).find('.eomnibarFrame');
-                    const $iframeContent = $($iframe[0].contentDocument);
-                    const $box = $iframeContent.find('#eomnibar');
-                    const $completionList = $box.find('ul');
-                    $completionList.append(htmlItems);
-                //});
-            }, 500);
-        } else {
-            // step 1
-            this.oauth.request({'method': 'GET', 'url': this.evernoteHostName + '/oauth', 'success': (data) => {this.success(data)}, 'failure': (error) => {this.failure(error);}});
-        }
+    failure(error) {
+        console.log(error);
     }
 
     success(data) {
@@ -229,6 +239,10 @@ class Controller {
 
     performSearch(queryString, maxSuggestion) {
         console.log(queryString);
+        if (!queryString) {
+            console.log('empty queryString, returned');
+            return;
+        }
         const queryTerms = queryString.split(' ');
         const suggestions = [];
         for (let i = 0, len = this.allNotes.length; i < len; i++) {

@@ -3,19 +3,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
-        <title>Hello World</title>
-    </head>
-    <body>
-        <div class="app">
-            <h1>Apache Cordova</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
-                <!--<input type="submit" value="Login With Evernote" onClick="app.loginWithEvernote()"</input>-->
-                <button id="login" type="submit">Login With Evernote</button>
-                <button id="logout" type="submit">Logout</button>
-            </div>
-        </div>
+        <title>Evernote Quick Search</title>
         <script src="js/jquery-3.2.1.min.js" type="text/javascript"></script>
         <script src="js/jsOAuth-1.3.6.min.js" type="text/javascript"></script>
         <script src="js/evernote/evernote-sdk-minified.js"></script>
@@ -23,7 +11,15 @@
         <script type="text/javascript" src="js/utils.js"></script>
         <script type="text/javascript" src="js/controller.js"></script>
         <script type="text/javascript" src="main.js"></script>
-        <script type="text/javascript" src="js/eomnibar.js"></script>
+    </head>
+    <body>
+        <div class="app">
+            <h1>Evernote Quick Search</h1>
+            <div id="deviceready">
+                <a id="login" class="ui-button"></a>
+                <!--<a id="logout" class="ui-button">Logout</a>-->
+            </div>
+        </div>
     </body>
 </html>
 

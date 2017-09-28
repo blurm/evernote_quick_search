@@ -1,7 +1,9 @@
+/**
+ * 负责iframe内搜索框本身的事件以及处理
+ *
+ */
 class EomnibarIn {
-    constructor(controller) {
-        this.controller = controller;
-
+    constructor() {
         this.eomnibarDOM = null;
         this.completionUl = null;
         this.input = null;
@@ -12,6 +14,14 @@ class EomnibarIn {
         this.forceNewTab = false;
         this.openInNewTab = false;
 
+        // port for communication with background page - this is chrome way
+        this.backgroundPort = chrome.runtime.connect({name: 'eomnibarPort'});
+        this.backgroundPort.onMessage.addListener((msg) => {
+            console.log(msg);
+            this._displaySuggestions(msg.queryString, msg.suggestions);
+        });
+
+        // Port for conmmunication with iframe - this is html5 way
         this.port = null;
 
         this.init();
@@ -55,43 +65,52 @@ class EomnibarIn {
     }
 
     onInput(event) {
-        this.completionUl.empty();
-
-        // 所有匹配的选项
         const queryString = event.currentTarget.value.trim();
         if (queryString === '') {
-            this.completionUl.hide();
+            this.completionUl.empty();
             return;
         }
-        const suggestions = this.controller.performSearch(queryString, this.maxSuggestion);
-        this.suggestions = suggestions;
-        this.selection = 0;
 
-        // convert note items to html li
+        this.backgroundPort.postMessage({
+            action: 'performSearch',
+            queryString: queryString,
+            maxSuggestion: this.maxSuggestion
+        });
+    }
+
+    _displaySuggestions(queryString, suggestions) {
+        this.completionUl.empty();
+
+        // If matched suggestions
+        if (suggestions.length === 0) {
+            return;
+        }
+
+        this.suggestions = suggestions;
+
+        this.completionUl.append(this._convertNote2HTML(queryString, suggestions));
+        // Hightlight current selected
+        this.updateSelection();
+        this.completionUl.show();
+    }
+
+    _convertNote2HTML(queryString, suggestions) {
         let htmlItems = '';
         for (let i in suggestions) {
             const index = parseInt(i);
-            if (index === this.selection) {
-                htmlItems += '<li class="eomnibarSuggestion eomnibarSelected">' + this.generateItems(suggestions[index], queryString.trim()) + '</li>';
-            } else {
-                htmlItems += '<li class="eomnibarSuggestion">' + this.generateItems(suggestions[index], queryString.trim()) + '</li>';
-            }
+            htmlItems += this._generateSuggestion(suggestions[index], queryString.trim());
 
+            // Only display maxed suggestions
             if (index === this.maxSuggestion) {
                 break;
             }
         }
 
-        if (suggestions.length === 0) {
-            this.completionUl.hide();
-        } else {
-            this.completionUl.append(htmlItems);
-            this.completionUl.show();
-        }
+        return htmlItems;
     }
 
     onActionKeydown(event) {
-        const action = this.actionFromKeyEvent(event);
+        const action = this._actionFromKeyEvent(event);
         if (!action) {
             return true;
         }
@@ -130,17 +149,17 @@ class EomnibarIn {
         event.preventDefault()
     }
 
-    actionFromKeyEvent(event) {
+    _actionFromKeyEvent(event) {
         const key = event.key;
         if (key === 'Escape' || (event.ctrlKey && key === '[')) {
             return 'dismiss';
-        } else if (key == 'up' ||
+        } else if (key == 'ArrowUp' ||
             (event.shiftKey && event.key == "Tab") ||
             (event.ctrlKey && (key == "k" || key == "p"))) {
             return 'up';
         } else if (event.key == "Tab" && !event.shiftKey) {
             return 'down';
-        } else if (key == "down" ||
+        } else if (key == "ArrowDown" ||
             (event.ctrlKey && (key == "j" || key == "n"))) {
             return 'down';
         } else if (event.key == "Enter") {
@@ -174,29 +193,31 @@ class EomnibarIn {
         }
     }
 
-    generateItems(item, queryString) {
-        return `<div class="eomnibarTopHalf">
-                    <span class="eomnibarSource"></span>
-                    <span class="eomnibarTitle">
-                        ${this.highlightQueryTerms(item.title, queryString)}
-                    </span>
-                </div>`
+    _generateSuggestion(suggestion, queryString) {
+        return `<li class="">
+                    <div class="eomnibarTopHalf">
+                        <span class="eomnibarSource"></span>
+                        <span class="eomnibarTitle">
+                            ${this._highlightQueryTerms(suggestion.title, queryString)}
+                        </span>
+                    </div>
+                </li>`;
     }
 
     /**
      * 将匹配的关键词在笔记标题中高亮显示
      *
      */
-    highlightQueryTerms(string, queryString) {
+    _highlightQueryTerms(string, queryString) {
         let ranges = [];
 
         const terms = queryString.split(' ');
 
         for (const term of terms) {
-            this.pushMatchingRanges(string, term, ranges);
+            this._pushMatchingRanges(string, term, ranges);
         }
 
-        ranges = this.mergeRanges(ranges.sort((a, b) => a[0] - b[0]));
+        ranges = this._mergeRanges(ranges.sort((a, b) => a[0] - b[0]));
 
         // replace portions of the string from right to left.
         ranges = ranges.sort((a, b) => b[0] - a[0]);
@@ -214,7 +235,7 @@ class EomnibarIn {
      * 找到匹配关键词在整个字符串中的范围位置
      *
      */
-    pushMatchingRanges(string,term,ranges) {
+    _pushMatchingRanges(string,term,ranges) {
         let textPosition = 0;
         // 用下面的正则分组，可以把term包含在数组中，比如：
         // 'javascript'.split(/(a)/i)
@@ -238,7 +259,7 @@ class EomnibarIn {
      * merge 重叠的range
      * 比如：关键词分别出现在string的0-5,3-7，merge之后就变为0-7
      */
-    mergeRanges(ranges) {
+    _mergeRanges(ranges) {
         // start from the first one, 第一个肯定是没问题的，在第一个基础上算区间
         // 重复
         let previous = ranges.shift();
@@ -257,13 +278,7 @@ class EomnibarIn {
 
 }
 
-//const shadow = $('#myroot')[0].shadowRoot;
-//const $iframe = $(shadow).find('.eomnibarFrame');
-//const $iframeContent = $($iframe[0].contentDocument);
-//const $eomnibar = $iframeContent.find('#eomnibar');
-
 $(document).ready(function(){
-    console.log('iframe.js', $('#eomnibarInput'));
-    var controller = new Controller();
-    var barIn = new EomnibarIn(controller);
+    //var controller = chrome.extension.getBackgroundPage().eomnibarController;
+    var barIn = new EomnibarIn();
 });

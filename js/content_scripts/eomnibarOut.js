@@ -1,3 +1,7 @@
+/**
+ * 负责iframe以及其外层shadowDOM的创建和事件处理
+ *
+ */
 class EomnibarOut {
     constructor() {
         this.iframe = null;
@@ -66,7 +70,8 @@ class EomnibarOut {
         // won't capture keydown event if current focused target is input or textarea
         const tagName = event.target.tagName.toLowerCase();
         if ((tagName === 'input' && ['text', 'search'].indexOf(event.target.type.toLowerCase()) > -1)
-            || tagName === 'textarea') {
+            || tagName === 'textarea'
+            || (tagName === 'div' && event.target.contentEditable === 'true')) {
             console.log('input or textarea');
             return;
         }
@@ -104,4 +109,4 @@ class EomnibarOut {
     }
 }
 
-var barOut = new EomnibarOut();
+var eomnibarOut = new EomnibarOut();
