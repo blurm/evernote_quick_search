@@ -41,10 +41,10 @@ class Controller {
     }
 
     initOAuthInfo() {
-        chrome.storage.local.get((items) => {
-            console.log('storage.local:', items);
-            console.log('background:', chrome.extension.getBackgroundPage().eomnibarController);
+        chrome.storage.sync.get((items) => {
+            console.log('storage.sync:', items);
 
+            // 如果token为空则跳转到授权页面
             if (!items.oauth_token) {
                 chrome.tabs.create({url:"main.html"});
                 return;
@@ -73,6 +73,11 @@ class Controller {
             this.allNotes = [];
             this.search.loadAllNotes(this.allNotes);
         });
+
+        //chrome.storage.local.get((items) => {
+            //console.log('storage.local:', items);
+
+        //});
     }
 
     logout() {
@@ -115,7 +120,7 @@ class Controller {
             else if(y[0] === 'oauth_token_secret') {
                 console.log(vars);
                 this.oauth_token_secret = y[1];
-                chrome.storage.local.set({oauth_token_secret: y[1]})
+                chrome.storage.sync.set({oauth_token_secret: y[1]})
                 console.log('set access token', y[1]);
             }
             else if(y[0] === 'oauth_callback_confirmed') {
@@ -167,7 +172,7 @@ class Controller {
 
                             // step 3
                             let local_token = '';
-                            chrome.storage.local.get((items) => {
+                            chrome.storage.sync.get((items) => {
                                 this.oauth.setVerifier(verifier);
                                 this.oauth.setAccessToken([got_oauth, items.oauth_token_secret]);
 
@@ -184,18 +189,14 @@ class Controller {
                 });
             });
         } else {
-            chrome.storage.local.get('name', (items) => {
-                console.log('storage get', items);
-            });
-
             var querystring = this.getQueryParams(data.text);
-            chrome.storage.local.set({edam_expires: querystring.edam_expires});
-            chrome.storage.local.set({edam_noteStoreUrl: querystring.edam_noteStoreUrl});
-            chrome.storage.local.set({edam_shard: querystring.edam_shard});
-            chrome.storage.local.set({edam_userId: querystring.edam_userId});
-            chrome.storage.local.set({edam_webApiUrlPrefix: querystring.edam_webApiUrlPrefix});
-            chrome.storage.local.set({oauth_token: querystring.oauth_token});
-            chrome.storage.local.set({oauth_token_secret: querystring.oauth_token_secret});
+            chrome.storage.sync.set({edam_expires: querystring.edam_expires});
+            chrome.storage.sync.set({edam_noteStoreUrl: querystring.edam_noteStoreUrl});
+            chrome.storage.sync.set({edam_shard: querystring.edam_shard});
+            chrome.storage.sync.set({edam_userId: querystring.edam_userId});
+            chrome.storage.sync.set({edam_webApiUrlPrefix: querystring.edam_webApiUrlPrefix});
+            chrome.storage.sync.set({oauth_token: querystring.oauth_token});
+            chrome.storage.sync.set({oauth_token_secret: querystring.oauth_token_secret});
 
             this.initOAuthInfo();
 
