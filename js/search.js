@@ -1,17 +1,14 @@
 class Search {
     constructor(options) {
-        this.noteStore = options.noteStore;
+        //this.noteStore = options.noteStore;
         this.authToken = options.authToken;
         this.filter = options.filter;
+
         this.spec = new NotesMetadataResultSpec();
         this.spec.includeTitle = true;
         this.spec.includeUpdated = true;
 
-
-        const noteStoreURL = options.noteStoreUrl;
-        const noteStoreTransport = new Thrift.BinaryHttpTransport(noteStoreURL);
-        const noteStoreProtocol = new Thrift.BinaryProtocol(noteStoreTransport);
-        this.noteStore = new NoteStoreClient(noteStoreProtocol);
+        this.noteStore = this._getNoteStore(options.noteStoreUrl);
 
         this.partNoteURL = options.partNoteURL;
         this.allNotes = [];
@@ -54,6 +51,13 @@ class Search {
                 //return this.allNotes;
             }
         });
+    }
+
+    _getNoteStore(noteStoreUrl) {
+        console.log('noteStoreURL', noteStoreUrl);
+        const noteStoreProtocol = new Thrift.BinaryProtocol(
+            new Thrift.BinaryHttpTransport(noteStoreUrl));
+        return new NoteStoreClient(noteStoreProtocol);
     }
 
 }

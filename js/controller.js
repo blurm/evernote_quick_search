@@ -1,31 +1,19 @@
-var config = {
-    isSandbox: 0,
-    evernote: {
-        consumerKey: 'blurm-9322',
-        consumerSecret: 'e07995a2b96d7819',
-        hostName: 'https://www.evernote.com'
-    },
-    yinxiang: {
-        consumerKey: 'blurm',
-        consumerSecret: '3c51cc37dc7c6ef5',
-        hostName: 'https://app.yinxiang.com'
-    }
-}
-
 class Controller {
     constructor() {
-        this.isSandbox = config.isSandbox;
+        this.isSandbox = eomnibarConfig.isSandbox;
 
         // Set api key and host by user's language setting in Chrome
         chrome.i18n.getAcceptLanguages((list) => {
             if ('zh-CN' === list[0]) {
-                this.consumerKey = config.yinxiang.consumerKey;
-                this.consumerSecret = config.yinxiang.consumerSecret;
-                this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : config.yinxiang.hostName;
+                this.developerToken = eomnibarConfig.yinxiang.developerToken;
+                this.consumerKey = eomnibarConfig.yinxiang.consumerKey;
+                this.consumerSecret = eomnibarConfig.yinxiang.consumerSecret;
+                this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : eomnibarConfig.yinxiang.hostName;
             } else {
-                this.consumerKey = config.evernote.consumerKey;
-                this.consumerSecret = config.evernote.consumerSecret;
-                this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : config.evernote.hostName;
+                this.developerToken = eomnibarConfig.evernote.developerToken;
+                this.consumerKey = eomnibarConfig.evernote.consumerKey;
+                this.consumerSecret = eomnibarConfig.evernote.consumerSecret;
+                this.evernoteHostName = this.isSandbox ? 'https://sandbox.evernote.com' : eomnibarConfig.evernote.hostName;
             }
 
             const options = {
@@ -64,7 +52,8 @@ class Controller {
 
             const searchOptions = {
                 noteStoreUrl: this.noteStoreUrl,
-                authToken: this.oauth_token,
+                //authToken: this.oauth_token,
+                authToken: this.developerToken ? this.developerToken : this.oauth_token,
                 filter: new NoteFilter(),
                 partNoteURL: this.evernoteHostName + '/shard/' + this.shard +
                 '/nl/' + this.userId

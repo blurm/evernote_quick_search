@@ -12,6 +12,7 @@
           "js/jsOAuth-1.3.6.min.js",
           "js/evernote/evernote-sdk-minified.js",
           "js/utils.js",
+          "js/eomnibarConfig.js",
           "js/controller.js",
           "js/search.js",
           "eventPage.js"
@@ -20,9 +21,7 @@
   },
   "content_scripts": [
       {
-          "matches": [
-              "<all_urls>"
-          ],
+          "matches": ["<all_urls>"],
           "js": [
               "js/jquery-3.2.1.min.js",
               "js/content_scripts/eomnibarOut.js"
@@ -43,7 +42,6 @@
     "eomnibar.html",
     "evernote_qs.css",
     "eomnibar.css",
-    "oauth.html",
     "gotOAuth.html"
   ],
   "permissions": [
