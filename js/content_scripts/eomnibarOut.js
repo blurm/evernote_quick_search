@@ -69,9 +69,9 @@ class EomnibarOut {
 
         // won't capture keydown event if current focused target is input or textarea
         const tagName = event.target.tagName.toLowerCase();
-        if ((tagName === 'input' && ['text', 'search'].indexOf(event.target.type.toLowerCase()) > -1)
-            || tagName === 'textarea'
-            || (tagName === 'div' && event.target.contentEditable === 'true')) {
+        const isEditableInput = (tagName === 'input' && ['text', 'search'].indexOf(event.target.type.toLowerCase()) > -1);
+        const isEditableDiv = (tagName === 'div' && event.target.contentEditable === 'true');
+        if (isEditableInput || tagName === 'textarea' || isEditableDiv) {
             console.log('input or textarea');
             return;
         }
@@ -109,4 +109,7 @@ class EomnibarOut {
     }
 }
 
-var eomnibarOut = new EomnibarOut();
+$(document).ready(function(){
+    var eomnibarOut = new EomnibarOut();
+    chrome.runtime.sendMessage({action: 'loadAllNotes'});
+});

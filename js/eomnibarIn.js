@@ -22,7 +22,7 @@ class EomnibarIn {
         });
 
         // Port for conmmunication with iframe - this is html5 way
-        this.port = null;
+        this.port = 'port';
 
         this.init();
     }
@@ -65,6 +65,8 @@ class EomnibarIn {
     }
 
     onInput(event) {
+        this.selection = 0;
+
         const queryString = event.currentTarget.value.trim();
         if (queryString === '') {
             this.completionUl.empty();
@@ -140,9 +142,11 @@ class EomnibarIn {
             const curSuggestion = this.suggestions[this.selection];
             this.hide();
             if (this.openInNewTab) {
-                chrome.tabs.create({url: curSuggestion.url});
+                //chrome.tabs.create({url: curSuggestion.url});
+                chrome.runtime.sendMessage({action: 'openInNewTab', url: curSuggestion.url});
             } else {
-                chrome.tabs.update({url: curSuggestion.url});
+                //chrome.tabs.update({url: curSuggestion.url});
+                chrome.runtime.sendMessage({action: 'openInCurrentTab', url: curSuggestion.url});
             }
         }
         event.stopImmediatePropagation()

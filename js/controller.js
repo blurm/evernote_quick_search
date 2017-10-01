@@ -59,14 +59,19 @@ class Controller {
                 '/nl/' + this.userId
             };
             this.search = new Search(searchOptions);
-            this.allNotes = [];
-            this.search.loadAllNotes(this.allNotes);
         });
 
         //chrome.storage.local.get((items) => {
             //console.log('storage.local:', items);
 
         //});
+    }
+
+    loadAllNotes() {
+        this.allNotes = [];
+        this.search.notesCount = 0;
+        this.search.loadAllNotes(this.allNotes);
+        console.log('all notes length:', this.allNotes.length);
     }
 
     logout() {

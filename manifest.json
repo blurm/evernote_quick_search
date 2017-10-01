@@ -16,8 +16,7 @@
           "js/controller.js",
           "js/search.js",
           "eventPage.js"
-      ],
-      "persistent": false
+      ]
   },
   "content_scripts": [
       {

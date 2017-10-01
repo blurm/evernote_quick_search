@@ -16,6 +16,17 @@ chrome.runtime.onConnect.addListener(function(port) {
     }
 });
 
+chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
+    if (request.action === 'loadAllNotes') {
+        eomnibarController.loadAllNotes();
+    }
+    if (request.action === 'openInNewTab') {
+        chrome.tabs.create({url: request.url});
+    } else if (request.action === 'openInCurrentTab'){
+        chrome.tabs.update({url: request.url});
+    }
+});
+
 chrome.browserAction.onClicked.addListener(function(tab) {
     chrome.tabs.create({url:"main.html"});
 });
