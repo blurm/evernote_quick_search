@@ -4,9 +4,6 @@ $(document).ready( () => {
     $('#login').click(() => {
         const backgroundPort = chrome.runtime.connect({name: 'eomnibarPort'});
         backgroundPort.postMessage({action: 'loginWithEvernote'});
-        //backgroundPort.onMessage.addListener((msg) => {
-            //console.log(msg);
-        //});
     });
     //$('#logout').click(() => controller.logout());
 
