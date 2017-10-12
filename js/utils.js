@@ -16,3 +16,7 @@ function getSearchStrRegex(string, prefix="", suffix="") {
     const flag = hasUpperCase(string) ? '' : 'i';
     return new RegExp(regexpString, flag);
 }
+
+function getCNContainedRegex() {
+    return /([\u4e00-\u9fa5]+)/;
+}

@@ -11,6 +11,8 @@
       "scripts": [
           "js/jsOAuth-1.3.6.min.js",
           "js/evernote/evernote-sdk-minified.js",
+          "js/pinyin_dict_notone.js",
+          "js/pinyinUtil.js",
           "js/utils.js",
           "js/config.js",
           "js/controller.js",

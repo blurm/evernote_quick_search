@@ -22,7 +22,7 @@ class Search {
      * fetch all notes' metadata from evernote
      *
      */
-    loadAllNotes(allNotes) {
+    loadAllNotes(allNotes, onNoteLoadFinish) {
         this.noteStore.findNotesMetadata(this.authToken, this.filter, this.notesCount, 200, this.spec, (data) => {
             console.log(data);
             for (const note of data.notes) {
@@ -39,7 +39,10 @@ class Search {
             this.notesCount += data.notes.length;
             if (this.notesCount < data.totalNotes) {
                 // 写成递归调用，当前笔记数小于总数时继续递归
-                this.loadAllNotes(allNotes);
+                this.loadAllNotes(allNotes, onNoteLoadFinish);
+            } else {
+                // 当前笔记数等于总数，所有笔记已经加载完毕
+                onNoteLoadFinish();
             }
         });
     }

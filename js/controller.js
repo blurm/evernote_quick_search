@@ -70,8 +70,37 @@ class Controller {
     loadAllNotes() {
         this.allNotes = [];
         this.search.notesCount = 0;
-        this.search.loadAllNotes(this.allNotes);
+        this.search.loadAllNotes(this.allNotes, () => {this.genPinyinTitleField();});
         console.log('all notes length:', this.allNotes.length);
+    }
+
+    genPinyinTitleField() {
+        for (const note of this.allNotes) {
+            const regexCN = getCNContainedRegex();
+            const pinyinFields = [];
+            note.pinyinFields = pinyinFields;
+
+            // 不包含中文则跳过
+            if (!regexCN.test(note.title)) {
+                note.containCN = false;
+                continue;
+            }
+            note.containCN = true;
+
+            const splits = note.title.split(regexCN);
+            let start = 0;
+            for (let i = 1, len = splits.length; i < len; i += 2) {
+                const pyField = {};
+                pyField.firstLetters = pinyinUtil.getFirstLetter(splits[i], false);
+
+                start += splits[i-1].length;
+                const end = start + splits[i].length;
+                pyField.range = [start, end];
+                pinyinFields.push(pyField);
+
+                start = end;
+            }
+        }
     }
 
     logout() {
@@ -193,25 +222,6 @@ class Controller {
             chrome.storage.sync.set({oauth_token_secret: querystring.oauth_token_secret});
 
             this.initOAuthInfo();
-
-            //var querystring = this.getQueryParams(data.text);
-            //var noteStoreURL = querystring.edam_noteStoreUrl;
-            //var noteStoreTransport = new Thrift.BinaryHttpTransport(noteStoreURL);
-            //var noteStoreProtocol = new Thrift.BinaryProtocol(noteStoreTransport);
-            //var noteStore = new NoteStoreClient(noteStoreProtocol);
-            //var authTokenEvernote = querystring.oauth_token;
-            //noteStore.listNotebooks(authTokenEvernote, function (notebooks) {
-                //console.log(notebooks);
-            //},
-                //function onerror(error) {
-                    //console.log(error);
-                //});
-            //var note = new Note;
-            //note.content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\"><en-note><span style=\"font-weight:bold;\">Hello photo note.</span><br /><span>Evernote logo :</span><br /></en-note>";
-            //note.title = "Hello javascript lib";
-            //noteStore.createNote(authTokenEvernote,note,function (noteCallback) {
-                //console.log(noteCallback.guid + " created");
-            //});
         }
 
     }
@@ -242,10 +252,11 @@ class Controller {
         const suggestions = [];
         for (let i = 0, len = this.allNotes.length; i < len; i++) {
             const curNote = this.allNotes[i];
+            // 全部的queryTerm都匹配，才能算该suggestion匹配
             let matched = true;
             for (const queryTerm of queryTerms) {
                 const regex = getSearchStrRegex(queryTerm);
-                if (!curNote.title.match(regex)) {
+                if (!this._isMatchSuggestion(curNote, queryTerm)) {
                     matched = false;
                 }
             }
@@ -255,5 +266,23 @@ class Controller {
         }
 
         return suggestions;
+    }
+
+    _isMatchSuggestion(curNote, queryTerm) {
+        const regex = getSearchStrRegex(queryTerm);
+        if (regex.test(curNote.title) || this._isMatchPinyin(curNote, queryTerm)) {
+            return true;
+        }
+        return false;
+    }
+
+    _isMatchPinyin(curNote, queryTerm) {
+        const regex = getSearchStrRegex(queryTerm);
+        for (const pyField of curNote.pinyinFields) {
+            if (regex.test(pyField.firstLetters)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

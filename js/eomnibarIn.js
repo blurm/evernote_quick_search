@@ -198,11 +198,12 @@ class EomnibarIn {
     }
 
     _generateSuggestion(suggestion, queryString) {
+        console.log(suggestion);
         return `<li class="">
                     <div class="eomnibarTopHalf">
                         <span class="eomnibarSource"></span>
                         <span class="eomnibarTitle">
-                            ${this._highlightQueryTerms(suggestion.title, queryString)}
+                            ${this._highlightQueryTerms(suggestion, queryString)}
                         </span>
                     </div>
                 </li>`;
@@ -212,13 +213,14 @@ class EomnibarIn {
      * 将匹配的关键词在笔记标题中高亮显示
      *
      */
-    _highlightQueryTerms(string, queryString) {
+    _highlightQueryTerms(suggestion, queryString) {
         let ranges = [];
+        let string = suggestion.title;
 
         const terms = queryString.split(' ');
 
         for (const term of terms) {
-            this._pushMatchingRanges(string, term, ranges);
+            this._pushAllMatchingRanges(suggestion, term, ranges);
         }
 
         ranges = this._mergeRanges(ranges.sort((a, b) => a[0] - b[0]));
@@ -239,14 +241,37 @@ class EomnibarIn {
      * 找到匹配关键词在整个字符串中的范围位置
      *
      */
-    _pushMatchingRanges(string,term,ranges) {
+    _pushAllMatchingRanges(suggestion,term,ranges) {
         let textPosition = 0;
         // 用下面的正则分组，可以把term包含在数组中，比如：
         // 'javascript'.split(/(a)/i)
         // (5) ["j", "a", "v", "a", "script"]
         // 最后一个元素可以不要，只遍历前面的
+        this._pushMatchingRanges(suggestion.title, textPosition, term, ranges);
+
+        const regexCN = getCNContainedRegex();
+        // 当前查询字符串为英文则进行首字母匹配
+        if (!regexCN.test(term) && regexCN.test(suggestion.title)) {
+            this._pushPinyinMatchingRanges(suggestion, term, ranges);
+        }
+    }
+
+    /**
+     * 找到关键词在大写拼音首字母中的位置范围
+     *
+     */
+    _pushPinyinMatchingRanges(suggestion, term, ranges) {
+        for (const pyField of suggestion.pinyinFields) {
+            let string = pyField.firstLetters;
+            let textPosition = pyField.range[0]
+            this._pushMatchingRanges(string, textPosition, term, ranges);
+        }
+    }
+
+    _pushMatchingRanges(string, textPosition, term, ranges) {
         const splits = string.split(getSearchStrRegex(term, '(', ')'));
         for (let i = 0, len = splits.length; i < len; i += 2) {
+            // 忽略最后一个元素，计算过程中用不到
             if (i < splits.length -1) {
                 const unmatchedText = splits[i];
                 textPosition += unmatchedText.length;
@@ -254,8 +279,6 @@ class EomnibarIn {
                 textPosition += term.length;
             }
 
-        }
-        for (let indexStr in splits) {
         }
     }
 
