@@ -7,11 +7,18 @@ class EomnibarOut {
         this.iframe = null;
         this.iframeWin = null;
 
+        // Deprecated
         // conmmunicate with iframe
-        this.channel = new MessageChannel();
-        // port1 for reseive iframe's message
-        this.channel.port1.onmessage = (e) => {this.handleMessage(e)};
+        //this.channel = new MessageChannel();
+        //  port1 for reseive iframe's message
+        //this.channel.port1.onmessage = (e) => {this.handleMessage(e)};
 
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            console.log('out.js onMessage addListener');
+            if (request.action === 'hideOut') {
+                this.hide();
+            }
+        });
         this.initIframe();
         this.initEvent();
     }
@@ -47,10 +54,10 @@ class EomnibarOut {
 
         //const shadow = $('#myroot')[0].shadowRoot;
         //const ifr = $(shadow).find('iframe')[0];
-        $iframe.on('load', (e) => {
-            this.iframeWin = $iframe[0].contentWindow;
-            this.iframeWin.postMessage('Message: from main window', '*', [this.channel.port2]);
-        });
+        //$iframe.on('load', (e) => {
+            //this.iframeWin = $iframe[0].contentWindow;
+            //this.iframeWin.postMessage('Message: from main window', '*', [this.channel.port2]);
+        //});
 
         $(shadowDOM).append($iframe);
         $('body').append(shadowWrapper);
@@ -78,7 +85,8 @@ class EomnibarOut {
 
         if (key === 'E' || (event.shiftKey && key === 'e')) {
             this.forceNewTab = true;
-            this.channel.port1.postMessage('eomnibar_activateInNewTab');
+            //this.channel.port1.postMessage('eomnibar_activateInNewTab');
+            chrome.runtime.sendMessage({action: 'eomnibar_activateInNewTab'});
             this.toggleIframeElementClasses('evernote_qsUIComponentHidden', 'evernote_qsUIComponentVisible');
         } else if (key === 'e'){
             this.toggleIframeElementClasses('evernote_qsUIComponentHidden', 'evernote_qsUIComponentVisible');
@@ -91,7 +99,13 @@ class EomnibarOut {
         return this.iframe.addClass(addClass);
     }
 
+    hide() {
+        this.toggleIframeElementClasses('evernote_qsUIComponentVisible', 'evernote_qsUIComponentHidden');
+    }
+
     /**
+     * Deprecated
+     *
      * handle messages sent from iframe
      *
      * hide: hide the iframe

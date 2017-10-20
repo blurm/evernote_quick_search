@@ -21,19 +21,29 @@ class EomnibarIn {
             this._displaySuggestions(msg.queryString, msg.suggestions);
         });
 
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            console.log('in.js onMessage addListener');
+            if (request.action === 'eomnibar_activateInNewTab') {
+                console.log('activateInNewTab in.js');
+                this.forceNewTab = true;
+            }
+        });
+
+        // Deprecated
         // Port for conmmunication with iframe - this is html5 way
-        this.port = 'port';
+        //this.port = 'port';
 
         this.init();
     }
 
     init() {
-        onmessage = (e) => {
-            console.log(e.data);
-            e.ports[0].postMessage('Message: received by IFrame: "' + e.data + '"');
-            this.port = e.ports[0];
-            this.port.onmessage = (e) => {this.handleMessage(e)};
-        };
+        // Deprecated
+        //onmessage = (e) => {
+            //console.log(e.data);
+            //e.ports[0].postMessage('Message: received by IFrame: "' + e.data + '"');
+            //this.port = e.ports[0];
+            //this.port.onmessage = (e) => {this.handleMessage(e)};
+        //};
 
         $(document).ready( () => {
             console.log('EomnibarIn iframe loaded');
@@ -48,6 +58,7 @@ class EomnibarIn {
         });
     }
 
+    // Deprecated
     handleMessage(e) {
         if (e.data === 'eomnibar_activateInNewTab') {
             this.forceNewTab = true;
@@ -175,7 +186,8 @@ class EomnibarIn {
     }
 
     hide() {
-        this.port.postMessage('hide');
+        //this.port.postMessage('hide');
+        chrome.runtime.sendMessage({action: 'hide'});
         this.reset();
     }
 
