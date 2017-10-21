@@ -18,7 +18,7 @@ class EomnibarIn {
         this.backgroundPort = chrome.runtime.connect({name: 'eomnibarPort'});
         this.backgroundPort.onMessage.addListener((msg) => {
             console.log(msg);
-            this._displaySuggestions(msg.queryString, msg.suggestions);
+            this.displaySuggestions(msg.queryString, msg.suggestions);
         });
 
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -26,6 +26,8 @@ class EomnibarIn {
             if (request.action === 'eomnibar_activateInNewTab') {
                 console.log('activateInNewTab in.js');
                 this.forceNewTab = true;
+            } else if (request.action === 'eomnibar_defaultSuggestions') {
+                this._getDefaultSuggestions();
             }
         });
 
@@ -69,10 +71,16 @@ class EomnibarIn {
     initEvent() {
         $(window).focus( () => {this.input.focus()} );
         this.input.on('input', (event) => {this.onInput(event)});
-        this.input.blur((event) => {console.log('input blur');this.input.focus();})
-        this.input.keydown( (event) => { this.onActionKeydown(event) } )
+        this.input.blur((event) => {console.log('input blur');this.input.focus();});
+        this.input.keydown( (event) => { this.onActionKeydown(event) } );
+        this.input.keyup( (event) => { this.onActionKeyup(event) } );
         $(document).click(() => {this.hide()});
         $(this.eomnibarDOM).click( (event) => {event.stopPropagation()} );
+    }
+
+    onKeydown(event) {
+        const queryString = event.currentTarget.value.trim();
+        console.log(queryString);
     }
 
     onInput(event) {
@@ -91,39 +99,30 @@ class EomnibarIn {
         });
     }
 
-    _displaySuggestions(queryString, suggestions) {
-        this.completionUl.empty();
+    onActionKeyup(event) {
+        const queryString = event.currentTarget.value.trim();
+        const action = this._actionFromKeyupEvent(event);
 
-        // If matched suggestions
-        if (suggestions.length === 0) {
-            return;
+        if (!action) {
+            return true;
         }
-
-        this.suggestions = suggestions;
-
-        this.completionUl.append(this._convertNote2HTML(queryString, suggestions));
-        // Hightlight current selected
-        this.updateSelection();
-        this.completionUl.show();
-    }
-
-    _convertNote2HTML(queryString, suggestions) {
-        let htmlItems = '';
-        for (let i in suggestions) {
-            const index = parseInt(i);
-            htmlItems += this._generateSuggestion(suggestions[index], queryString.trim());
-
-            // Only display maxed suggestions
-            if (index === this.maxSuggestion) {
-                break;
+        if (action === 'delete') {
+            if (!queryString) {
+                this._getDefaultSuggestions();
             }
         }
-
-        return htmlItems;
     }
 
+    /**
+     * Implement eomnibar's own key binding
+     *
+     */
     onActionKeydown(event) {
-        const action = this._actionFromKeyEvent(event);
+
+        const queryString = event.currentTarget.value.trim();
+        console.log('onActionKeydown', queryString);
+
+        const action = this._actionFromKeydownEvent(event);
         if (!action) {
             return true;
         }
@@ -164,25 +163,61 @@ class EomnibarIn {
         event.preventDefault()
     }
 
-    _actionFromKeyEvent(event) {
+    displaySuggestions(queryString, suggestions) {
+        this.completionUl.empty();
+
+        // If matched suggestions
+        if (suggestions.length === 0) {
+            return;
+        }
+
+        this.suggestions = suggestions;
+
+        this.completionUl.append(this._convertNote2HTML(queryString, suggestions));
+        // Hightlight current selected
+        this.updateSelection();
+        this.completionUl.show();
+    }
+
+    _convertNote2HTML(queryString, suggestions) {
+        let htmlItems = '';
+        for (let i in suggestions) {
+            const index = parseInt(i);
+            htmlItems += this._generateSuggestion(suggestions[index], queryString.trim());
+
+            // Only display maxed suggestions
+            if (index === this.maxSuggestion) {
+                break;
+            }
+        }
+
+        return htmlItems;
+    }
+
+
+    _actionFromKeyupEvent(event) {
+        const key = event.key;
+        if(["Backspace", "Delete"].includes(key)) {
+            return "delete"
+        }
+    }
+
+    _actionFromKeydownEvent(event) {
         const key = event.key;
         if (key === 'Escape' || (event.ctrlKey && key === '[')) {
             return 'dismiss';
         } else if (key == 'ArrowUp' ||
-            (event.shiftKey && event.key == "Tab") ||
+            (event.shiftKey && key == "Tab") ||
             (event.ctrlKey && (key == "k" || key == "p"))) {
             return 'up';
-        } else if (event.key == "Tab" && !event.shiftKey) {
+        } else if (key == "Tab" && !event.shiftKey) {
             return 'down';
         } else if (key == "ArrowDown" ||
             (event.ctrlKey && (key == "j" || key == "n"))) {
             return 'down';
-        } else if (event.key == "Enter") {
+        } else if (key == "Enter") {
             return 'enter';
         }
-        //else if(["Backspace", "Delete"].includes(key)) {
-        //return "delete"
-        //}
     }
 
     hide() {
@@ -315,6 +350,12 @@ class EomnibarIn {
         return mergedRanges;
     }
 
+    _getDefaultSuggestions() {
+        chrome.runtime.sendMessage(
+            {action: 'performSearch', queryString:'', maxSuggestion: 15},
+            (response) => {this.displaySuggestions('', response.suggestions)}
+        );
+    }
 }
 
 $(document).ready(function(){

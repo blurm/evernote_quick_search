@@ -244,24 +244,27 @@ class Controller {
 
     performSearch(queryString, maxSuggestion) {
         console.log(queryString);
+        let suggestions = [];
+
         if (!queryString) {
-            console.log('empty queryString, returned');
-            return;
-        }
-        const queryTerms = queryString.split(' ');
-        const suggestions = [];
-        for (let i = 0, len = this.allNotes.length; i < len; i++) {
-            const curNote = this.allNotes[i];
-            // 全部的queryTerm都匹配，才能算该suggestion匹配
-            let matched = true;
-            for (const queryTerm of queryTerms) {
-                const regex = getSearchStrRegex(queryTerm);
-                if (!this._isMatchSuggestion(curNote, queryTerm)) {
-                    matched = false;
+            console.log('empty queryString, show latest notes');
+            suggestions = this.allNotes.slice(0, maxSuggestion);
+        } else {
+            const queryTerms = queryString.split(' ');
+
+            for (let i = 0, len = this.allNotes.length; i < len; i++) {
+                const curNote = this.allNotes[i];
+                // 全部的queryTerm都匹配，才能算该suggestion匹配
+                let matched = true;
+                for (const queryTerm of queryTerms) {
+                    const regex = getSearchStrRegex(queryTerm);
+                    if (!this._isMatchSuggestion(curNote, queryTerm)) {
+                        matched = false;
+                    }
                 }
-            }
-            if (matched && suggestions.length < maxSuggestion) {
-                suggestions.push(curNote);
+                if (matched && suggestions.length < maxSuggestion) {
+                    suggestions.push(curNote);
+                }
             }
         }
 

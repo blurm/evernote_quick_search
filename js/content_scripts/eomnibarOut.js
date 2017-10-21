@@ -84,11 +84,15 @@ class EomnibarOut {
         }
 
         if (key === 'E' || (event.shiftKey && key === 'e')) {
-            this.forceNewTab = true;
+            //this.forceNewTab = true;
             //this.channel.port1.postMessage('eomnibar_activateInNewTab');
+
+            // This is send to iframe in.js
             chrome.runtime.sendMessage({action: 'eomnibar_activateInNewTab'});
+            chrome.runtime.sendMessage({action: 'eomnibar_defaultSuggestions'});
             this.toggleIframeElementClasses('evernote_qsUIComponentHidden', 'evernote_qsUIComponentVisible');
         } else if (key === 'e'){
+            chrome.runtime.sendMessage({action: 'eomnibar_defaultSuggestions'});
             this.toggleIframeElementClasses('evernote_qsUIComponentHidden', 'evernote_qsUIComponentVisible');
         }
         this.iframe.focus();

@@ -26,17 +26,16 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             chrome.tabs.sendMessage(tabs[0].id, {
                 action: 'hideOut'});
         });
-    }
-    if (request.action === 'loadAllNotes') {
+    } else if (request.action === 'loadAllNotes') {
         eomnibarController.loadAllNotes();
-    }
-    //if (request.action === 'eomnibar_activateInNewTab') {
-        //console.log('activateInNewTab eventPage');
-    //}
-    if (request.action === 'openInNewTab') {
+    } else if (request.action === 'openInNewTab') {
         chrome.tabs.create({url: request.url});
     } else if (request.action === 'openInCurrentTab'){
         chrome.tabs.update({url: request.url});
+    } else if (request.action === 'performSearch') {
+        const suggestions = eomnibarController.performSearch(
+            request.queryString, request.maxSuggestion);
+        sendResponse({suggestions: suggestions});
     }
 });
 
